@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MovieViz Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1 class="title">🎬 MovieViz Interactive Dashboard</h1>
+    <p class="intro">
+      Welcome to the MovieViz Dashboard — a powerful interactive system designed to help decision-makers in the film industry extract valuable insights from movie data. 
+      Using D3.js visualizations, you can explore genres, trends, budgets, and more to make strategic business decisions.
+    </p>
+  </header>
+
+  <div id="sidebar">
+    <!-- Chart Navigation -->
+    <nav id="chart-nav" aria-label="Chart selection">
+  <button type="button" data-chart="bar">Bar Chart</button>
+  <button type="button" data-chart="line">Line Chart</button>
+  <button type="button" data-chart="scatter">Scatter Plot</button>
+  <button type="button" data-chart="donut">Donut Chart</button>
+</nav>
+
+
+    <!-- Filters -->
+    <section id="filters" aria-label="Data filters">
+      <label for="genre">Genre:</label>
+      <select id="genre"><option value="All">All</option></select>
+
+      <label for="year">Year:</label>
+      <select id="year"><option value="All">All</option></select>
+    </section>
+  </div>
+
+  <!-- Main Dashboard Area -->
+  <section id="dashboard">
+    <!-- Left: Questions and Answers -->
+    <aside id="insights-panel" aria-live="polite">
+      <h2>📌 Strategic Insights</h2>
+      <div id="questions-answers">
+        <!-- Dynamic Q&A will be inserted here -->
+      </div>
+    </aside>
+
+    <!-- Right: Chart Container -->
+    <div id="chart-area" role="main">
+      <!-- D3 charts will be rendered here -->
+    </div>
+  </section>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
