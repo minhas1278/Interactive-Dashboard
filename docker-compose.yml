@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: interactive-dashboard:latest
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=myappdb
+      - DB_USER=myapp
+      - DB_PASS=examplepass
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: myappdb
+      MYSQL_USER: myapp
+      MYSQL_PASSWORD: examplepass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+    driver: bridge
