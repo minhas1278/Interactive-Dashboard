@@ -1,0 +1,122 @@
+# node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# env / secrets
+.env
+
+# logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+.vscode/
+'````
+
+2) Set Git line-ending behavior (recommended for Windows)
+```powershell
+git config --global core.autocrlf true
+```
+
+3) Remove node_modules from the repo index (do NOT delete local files)
+```powershell
+cd "D:\Projects\Interactive Dashboard"
+git rm -r --cached node_modules
+git add .gitignore
+git commit -m "Remove node_modules from repo and add .gitignore"
+git push origin main
+```
+
+4) Verify node_modules no longer tracked and repo size reduced
+```powershell
+git ls-files | Select-String "node_modules" -SimpleMatch     # should show nothing
+git rev-list --objects --all --count
+```
+
+5) If you already pushed large history and need to purge node_modules from history (optional / more intrusive)
+- Install BFG locally and run (be careful; this rewrites history and requires force-push):
+```powershell
+# example using BFG (do on a local clone)
+git clone --mirror https://github.com/YOUR_USER/Interactive-Dashboard.git
+java -jar bfg.jar --delete-folders node_modules --delete-files package-lock.json Interactive-Dashboard.git
+cd Interactive-Dashboard.git
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git push --force
+```
+(Only do this if you understand history rewrite and collaborators.)
+
+6) Rebuild image and push workflow (optional after repo cleaned)
+```powershell
+# ensure package-lock and package.json are present and node_modules not in git
+docker compose build --no-cache web
+docker compose up -d
+```
+
+If you want, I can:
+- Generate a safe .gitignore tuned to your project, or
+- Show commands to inspect repo size and large files before/after cleanup. Which one do you want?// filepath: d:\Projects\Interactive Dashboard\.gitignore
+# node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# env / secrets
+.env
+
+# logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+.vscode/
+'````
+
+2) Set Git line-ending behavior (recommended for Windows)
+```powershell
+git config --global core.autocrlf true
+```
+
+3) Remove node_modules from the repo index (do NOT delete local files)
+```powershell
+cd "D:\Projects\Interactive Dashboard"
+git rm -r --cached node_modules
+git add .gitignore
+git commit -m "Remove node_modules from repo and add .gitignore"
+git push origin main
+```
+
+4) Verify node_modules no longer tracked and repo size reduced
+```powershell
+git ls-files | Select-String "node_modules" -SimpleMatch     # should show nothing
+git rev-list --objects --all --count
+```
+
+5) If you already pushed large history and need to purge node_modules from history (optional / more intrusive)
+- Install BFG locally and run (be careful; this rewrites history and requires force-push):
+```powershell
+# example using BFG (do on a local clone)
+git clone --mirror https://github.com/YOUR_USER/Interactive-Dashboard.git
+java -jar bfg.jar --delete-folders node_modules --delete-files package-lock.json Interactive-Dashboard.git
+cd Interactive-Dashboard.git
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git push --force
+```
+(Only do this if you understand history rewrite and collaborators.)
+
+6) Rebuild image and push workflow (optional after repo cleaned)
+```powershell
+# ensure package-lock and package.json are present and node_modules not in git
+docker compose build --no-cache web
+docker compose up -d
+```
+
+If you want, I can:
+- Generate a safe .gitignore tuned to your project, or
+- Show commands to inspect repo size and large files before/after cleanup. Which one do you want?
