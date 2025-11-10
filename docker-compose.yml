@@ -1,39 +1,44 @@
-version: '3.8'
-
 services:
-  web:
-    build: .
-    image: interactive-dashboard:latest
-    restart: unless-stopped
+  web_jenkins:
+    image: node:18-alpine
+    container_name: interactive_dashboard_web_jenkins
+    working_dir: /app
+    volumes:
+      - ./:/app:cached           # mount repository code into container (code volume)
+      - /app/node_modules        # anonymous volume for node_modules inside container
+    command: sh -c "npm ci --production && node index.js"
     ports:
-      - "80:3000"
+      - "8081:3000"              # different host port than Part-I
     environment:
-      - DB_HOST=db
+      - PORT=3000
+      - DB_HOST=db_jenkins
       - DB_PORT=3306
       - DB_NAME=myappdb
       - DB_USER=myapp
       - DB_PASS=examplepass
     depends_on:
-      - db
+      - db_jenkins
     networks:
-      - backend
+      - jenkins_network
 
-  db:
+  db_jenkins:
     image: mysql:8.0
-    restart: unless-stopped
+    container_name: interactive_dashboard_db_jenkins
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: myappdb
       MYSQL_USER: myapp
       MYSQL_PASSWORD: examplepass
     volumes:
-      - db_data:/var/lib/mysql
+      - db_jenkins_data:/var/lib/mysql
+    ports:
+      - "3307:3306"              # host port different to Part-I
     networks:
-      - backend
+      - jenkins_network
 
 volumes:
-  db_data:
+  db_jenkins_data:
 
 networks:
-  backend:
+  jenkins_network:
     driver: bridge

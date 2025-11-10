@@ -1,0 +1,45 @@
+# Docker Compose for Part I - Using Docker Hub Image
+# This version pulls from Docker Hub instead of building locally
+# Use this on AWS EC2 for faster deployment
+
+services:
+  web:
+    image: minhasfarhat/interactive-dashboard:latest  # Pull from Docker Hub
+    container_name: interactive_dashboard_web
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=myappdb
+      - DB_USER=myapp
+      - DB_PASS=examplepass
+    depends_on:
+      - db
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: interactive_dashboard_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: myappdb
+      MYSQL_USER: myapp
+      MYSQL_PASSWORD: examplepass
+    volumes:
+      - db_data:/var/lib/mysql    # Persistent volume for database
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  db_data:    # Named volume for data persistence
+
+networks:
+  app_network:
+    driver: bridge
