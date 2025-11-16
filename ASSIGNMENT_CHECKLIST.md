@@ -1,4 +1,4 @@
-# Assignment 2 - DevOps - Completion Checklist
+ # Assignment 2 - DevOps - Completion Checklist
 
 ## ✅ Part I: Containerized Deployment [4+1 marks]
 
