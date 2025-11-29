@@ -1,5 +1,6 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
+const { ServiceBuilder } = require('selenium-webdriver/chrome');
 const assert = require('assert');
 const path = require('path');
 const os = require('os');
@@ -39,9 +40,13 @@ describe('MovieViz Dashboard UI Tests', function () {
         options.addArguments('--single-process');
         options.addArguments('--window-size=1920,1080');
 
+        // Build service with Selenium Manager disabled
+        const service = new ServiceBuilder();
+
         driver = await new Builder()
             .forBrowser('chrome')
             .setChromeOptions(options)
+            .setChromeService(service)
             .build();
 
         await driver.get(BASE_URL);

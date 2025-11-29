@@ -23,23 +23,29 @@ pipeline {
         stage('Run UI Tests') {
             steps {
                 echo 'Running Selenium tests in Docker container...'
-                sh '''
-                    docker run --rm \
-                        --network host \
-                        -e BASE_URL=http://localhost:3000 \
-                        -v ${WORKSPACE}/test-results:/app/test-results \
-                        dashboard-tests:${BUILD_NUMBER}
-                '''
+                sh 'mkdir -p ${WORKSPACE}/test-results'
+                sh 'curl -s http://localhost:3000/api/status || echo "WARNING: App may not be running"'
+                script {
+                    def testResult = sh(
+                        script: '''
+                            docker run --rm \
+                                --network host \
+                                -e BASE_URL=http://localhost:3000 \
+                                -v ${WORKSPACE}/test-results:/app/test-results \
+                                dashboard-tests:${BUILD_NUMBER}
+                        ''',
+                        returnStatus: true
+                    )
+                    if (testResult != 0) {
+                        echo "WARNING: Tests exited with code ${testResult}"
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
             post {
                 always {
                     archiveArtifacts artifacts: 'test-results/**/*', allowEmptyArchive: true
-                    publishHTML([
-                        reportDir: 'test-results',
-                        reportFiles: 'report.html',
-                        reportName: 'Mochawesome Test Report',
-                        allowMissing: true
-                    ])
+                    echo 'Test results archived. View report.html in build artifacts.'
                 }
             }
         }

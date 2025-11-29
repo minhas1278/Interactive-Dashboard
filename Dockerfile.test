@@ -1,9 +1,10 @@
 # Use Node 18 Alpine (much smaller base image ~50MB vs 300MB)
 FROM node:18-alpine
 
-# Install Chromium and dependencies (Alpine uses apk instead of apt)
+# Install Chromium, ChromeDriver and dependencies (Alpine uses apk instead of apt)
 RUN apk add --no-cache \
     chromium \
+    chromium-chromedriver \
     nss \
     freetype \
     harfbuzz \
@@ -11,7 +12,7 @@ RUN apk add --no-cache \
     ttf-freefont \
     font-noto-emoji
 
-# Tell Puppeteer/Selenium to skip downloading Chrome (use system Chromium)
+# Tell Puppeteer/Selenium to use system binaries
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
     CHROME_BIN=/usr/bin/chromium-browser \
