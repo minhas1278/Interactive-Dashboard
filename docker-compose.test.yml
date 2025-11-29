@@ -1,0 +1,18 @@
+services:
+  tests:
+    image: markhobson/maven-chrome:latest
+    container_name: interactive_dashboard_tests
+    working_dir: /usr/src/app
+    volumes:
+      - ./tests-java:/usr/src/app
+    environment:
+      - BASE_URL=http://web_jenkins:3000
+    networks:
+      - jenkins_network
+    depends_on:
+      - web_jenkins
+    command: mvn -B -q test
+
+networks:
+  jenkins_network:
+    external: true
