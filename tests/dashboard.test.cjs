@@ -28,10 +28,15 @@ describe('MovieViz Dashboard UI Tests', function () {
         if (chromePath) {
             options.setChromeBinaryPath(chromePath);
         }
-        options.addArguments('--headless=new');
+        // Use --headless for Alpine Chromium (not --headless=new)
+        options.addArguments('--headless');
         options.addArguments('--no-sandbox');
         options.addArguments('--disable-dev-shm-usage');
         options.addArguments('--disable-gpu');
+        options.addArguments('--disable-software-rasterizer');
+        options.addArguments('--disable-dev-tools');
+        options.addArguments('--no-zygote');
+        options.addArguments('--single-process');
         options.addArguments('--window-size=1920,1080');
 
         driver = await new Builder()

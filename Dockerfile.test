@@ -9,11 +9,12 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    udev \
-    xvfb
+    font-noto-emoji
 
-# Set Chromium path for Selenium
-ENV CHROME_BIN=/usr/bin/chromium-browser \
+# Tell Puppeteer/Selenium to skip downloading Chrome (use system Chromium)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/
 
 # Set working directory
