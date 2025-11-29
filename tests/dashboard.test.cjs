@@ -40,8 +40,9 @@ describe('MovieViz Dashboard UI Tests', function () {
         options.addArguments('--single-process');
         options.addArguments('--window-size=1920,1080');
 
-        // Build service with Selenium Manager disabled
-        const service = new ServiceBuilder();
+        // Build service with explicit chromedriver path for Alpine
+        const chromedriverPath = process.env.CHROMEDRIVER_PATH || '/usr/bin/chromedriver';
+        const service = new ServiceBuilder(chromedriverPath);
 
         driver = await new Builder()
             .forBrowser('chrome')
