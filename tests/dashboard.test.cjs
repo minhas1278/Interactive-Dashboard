@@ -6,7 +6,11 @@ const os = require('os');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-function getBravePath() {
+function getChromePath() {
+    // Check for Chromium (Alpine/Docker) or Chrome (local)
+    if (process.env.CHROME_BIN) {
+        return process.env.CHROME_BIN;
+    }
     if (os.platform() === 'win32') {
         return path.join(os.homedir(), 'AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe');
     }
@@ -20,16 +24,16 @@ describe('MovieViz Dashboard UI Tests', function () {
     before(async function () {
         this.timeout(60000);
         const options = new chrome.Options();
-        const bravePath = getBravePath();
-        if (bravePath) {
-            options.setChromeBinaryPath(bravePath);
+        const chromePath = getChromePath();
+        if (chromePath) {
+            options.setChromeBinaryPath(chromePath);
         }
         options.addArguments('--headless=new');
         options.addArguments('--no-sandbox');
         options.addArguments('--disable-dev-shm-usage');
         options.addArguments('--disable-gpu');
         options.addArguments('--window-size=1920,1080');
-        
+
         driver = await new Builder()
             .forBrowser('chrome')
             .setChromeOptions(options)
