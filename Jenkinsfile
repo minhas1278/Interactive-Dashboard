@@ -1,9 +1,9 @@
 pipeline {
     agent any
     
-    properties([
-        pipelineTriggers([githubPush()])
-    ])
+    triggers {
+        githubPush()
+    }
     
     stages {
         stage('Checkout') {
