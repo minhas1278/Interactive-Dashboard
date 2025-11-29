@@ -25,7 +25,8 @@ pipeline {
                 echo 'Running Selenium tests in Docker container...'
                 sh '''
                     docker run --rm \
-                        -e BASE_URL=http://35.175.173.95:3000 \
+                        --network host \
+                        -e BASE_URL=http://localhost:3000 \
                         -v ${WORKSPACE}/test-results:/app/test-results \
                         dashboard-tests:${BUILD_NUMBER}
                 '''
