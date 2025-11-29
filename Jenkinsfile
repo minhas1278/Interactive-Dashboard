@@ -1,10 +1,9 @@
 pipeline {
     agent any
     
-    environment {
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        PROJECT_NAME = 'interactive-dashboard'
-    }
+    properties([
+        pipelineTriggers([githubPush()])
+    ])
     
     stages {
         stage('Checkout') {
@@ -14,78 +13,77 @@ pipeline {
             }
         }
         
-        stage('Environment Info') {
+        stage('Build Test Container') {
             steps {
-                echo 'Displaying environment information...'
-                sh '''
-                    echo "Current directory: $(pwd)"
-                    echo "Docker version:"
-                    docker --version
-                    echo "Docker Compose version:"
-                    docker-compose --version
-                    echo "Git commit: ${GIT_COMMIT}"
-                    echo "Git branch: ${GIT_BRANCH}"
-                '''
+                echo 'Building Docker test image with Chrome and Selenium...'
+                sh 'docker build -f Dockerfile.test -t dashboard-tests:${BUILD_NUMBER} .'
             }
         }
         
-        stage('Stop Previous Containers') {
+        stage('Run UI Tests') {
             steps {
-                echo 'Stopping any existing containers...'
+                echo 'Running Selenium tests in Docker container...'
                 sh '''
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
+                    docker run --rm \
+                        -e BASE_URL=http://35.175.173.95:3000 \
+                        -v ${WORKSPACE}/test-results:/app/test-results \
+                        dashboard-tests:${BUILD_NUMBER}
                 '''
             }
-        }
-        
-        stage('Build') {
-            steps {
-                echo 'Building application with Docker Compose...'
-                sh '''
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} build --no-cache
-                '''
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                echo 'Starting containers...'
-                sh '''
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
-                '''
-            }
-        }
-        
-        stage('Verify Deployment') {
-            steps {
-                echo 'Verifying containers are running...'
-                sh '''
-                    echo "Running containers:"
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} ps
-                    
-                    echo "\nContainer logs (web service):"
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} logs --tail=50 web_jenkins
-                '''
+            post {
+                always {
+                    archiveArtifacts artifacts: 'test-results/**/*', allowEmptyArchive: true
+                    publishHTML([
+                        reportDir: 'test-results',
+                        reportFiles: 'report.html',
+                        reportName: 'Mochawesome Test Report',
+                        allowMissing: true
+                    ])
+                }
             }
         }
     }
     
     post {
         success {
-            echo 'Pipeline completed successfully!'
-            echo 'Application is running on port 8081'
+            script {
+                def committer = sh(returnStdout: true, script: "git log -1 --pretty=format:%an").trim()
+                def email = sh(returnStdout: true, script: "git log -1 --pretty=format:%ae").trim()
+                emailext(
+                    subject: "✅ Jenkins Build SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    to: email,
+                    mimeType: 'text/html',
+                    body: """
+                        <p>Hello ${committer},</p>
+                        <p>Jenkins build <strong>#${env.BUILD_NUMBER}</strong> completed successfully.</p>
+                        <p>✅ All Selenium UI tests passed!</p>
+                        <p>View build details: <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>
+                        <p>Test report: <a href='${env.BUILD_URL}Mochawesome_Test_Report/'>${env.BUILD_URL}Mochawesome_Test_Report/</a></p>
+                        <p>Regards,<br/>Jenkins</p>
+                    """
+                )
+            }
         }
         failure {
-            echo 'Pipeline failed!'
-            sh '''
-                echo "Checking logs for debugging..."
-                docker-compose -f ${DOCKER_COMPOSE_FILE} logs
-            '''
+            script {
+                def committer = sh(returnStdout: true, script: "git log -1 --pretty=format:%an").trim()
+                def email = sh(returnStdout: true, script: "git log -1 --pretty=format:%ae").trim()
+                emailext(
+                    subject: "❌ Jenkins Build FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    to: email,
+                    mimeType: 'text/html',
+                    body: """
+                        <p>Hello ${committer},</p>
+                        <p>Jenkins build <strong>#${env.BUILD_NUMBER}</strong> failed.</p>
+                        <p>❌ Please check the console output: <a href='${env.BUILD_URL}console'>${env.BUILD_URL}console</a></p>
+                        <p>Regards,<br/>Jenkins</p>
+                    """,
+                    attachLog: true
+                )
+            }
         }
         always {
-            echo 'Cleaning up...'
-            // Optionally clean up old images
-            sh 'docker system prune -f || true'
+            sh 'docker rmi dashboard-tests:${BUILD_NUMBER} || true'
         }
     }
 }
