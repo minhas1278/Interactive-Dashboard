@@ -16,7 +16,16 @@ pipeline {
         stage('Build Test Container') {
             steps {
                 echo 'Building Docker test image with Chrome and Selenium...'
-                sh 'docker build -f Dockerfile.test -t dashboard-tests:${BUILD_NUMBER} .'
+                script {
+                    // Check if base image exists, only rebuild if Dockerfile.test or tests changed
+                    def imageExists = sh(script: 'docker images -q dashboard-tests:latest', returnStdout: true).trim()
+                    if (!imageExists) {
+                        echo 'Building new test image...'
+                        sh 'docker build -f Dockerfile.test -t dashboard-tests:latest .'
+                    } else {
+                        echo 'Reusing existing test image...'
+                    }
+                }
             }
         }
         
@@ -32,7 +41,8 @@ pipeline {
                                 --network host \
                                 -e BASE_URL=http://localhost:3000 \
                                 -v ${WORKSPACE}/test-results:/app/test-results \
-                                dashboard-tests:${BUILD_NUMBER}
+                                -v ${WORKSPACE}/tests:/app/tests:ro \
+                                dashboard-tests:latest
                         ''',
                         returnStatus: true
                     )
@@ -90,7 +100,7 @@ pipeline {
             }
         }
         always {
-            sh 'docker rmi dashboard-tests:${BUILD_NUMBER} || true'
+            echo 'Keeping test image for reuse'
         }
     }
 }
