@@ -58,7 +58,7 @@ pipeline {
                 def email = sh(returnStdout: true, script: "git log -1 --pretty=format:%ae").trim()
                 emailext(
                     subject: "✅ Jenkins Build SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    to: email,
+                    to: "${email}, hassan.sarfraz030@gmail.com, minhasfarhat5@gmail.com, qasimalik@gmail.com",
                     mimeType: 'text/html',
                     body: """
                         <p>Hello ${committer},</p>
@@ -77,7 +77,7 @@ pipeline {
                 def email = sh(returnStdout: true, script: "git log -1 --pretty=format:%ae").trim()
                 emailext(
                     subject: "❌ Jenkins Build FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    to: email,
+                    to: "${email}, hassan.sarfraz030@gmail.com, minhasfarhat5@gmail.com, qasimalik@gmail.com",
                     mimeType: 'text/html',
                     body: """
                         <p>Hello ${committer},</p>
